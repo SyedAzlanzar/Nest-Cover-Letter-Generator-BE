@@ -7,9 +7,10 @@ import { AuthModule } from './auth/auth.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware'; // ✅ Import the middleware
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { JwtModule } from '@nestjs/jwt';
+import { MediaModule } from './media/media.module';
 
 @Module({
-  imports: [DatabaseModule, ConfigModule, AuthModule,OnboardingModule,JwtModule],
+  imports: [DatabaseModule, ConfigModule, AuthModule,OnboardingModule,JwtModule,MediaModule],
   controllers: [AppController],
   providers: [AppService],
 })
