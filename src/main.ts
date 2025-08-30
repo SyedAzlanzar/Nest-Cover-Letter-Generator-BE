@@ -18,21 +18,24 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   });
 
-const theme = new SwaggerTheme();
+  const theme = new SwaggerTheme();
   const config = new DocumentBuilder()
     .setTitle('Cover Letter Generator App')
     .setDescription('API documentation for Cover Letter Generator App.')
     .setVersion('1.0.0')
     .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       AuthorizationHeader.BEARER, // Name of the authorization scheme
     )
     .addTag('Cover Letter Generator App')
     .build();
 
-    const options = {
-      customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
-    };
+  const options = {
+    customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  };
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, options);
