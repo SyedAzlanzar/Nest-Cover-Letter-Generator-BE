@@ -5,6 +5,8 @@ import {
   IsUrl,
   IsPhoneNumber,
   IsEmail,
+  isBoolean,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 

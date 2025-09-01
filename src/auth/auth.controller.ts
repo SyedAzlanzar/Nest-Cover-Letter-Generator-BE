@@ -1,9 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ExistingUserDTO } from 'src/user/dto/existing-user.dto';
 
-import { NewUserDTO } from 'src/user/dto/new-user.dto';
-import { AuthService } from './auth.service';
-import { NewUser } from 'src/user/interface/user.interface';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -11,8 +15,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtDTO } from './dto/jwt.dto';
+import { NewUserDTO } from 'src/user/dto/new-user.dto';
+import { NewUser } from 'src/user/interface/user.interface';
 import { AuthorizationHeader } from 'src/utils/enum';
+import { AuthService } from './auth.service';
+import { JwtGuard } from './guards/jwt.guard';
+import { RequestUser } from 'src/utils/interface';
+import { Request as NestRequest } from '@nestjs/common';
+import { GetToken } from 'src/decorators/get-token.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -36,13 +46,6 @@ export class AuthController {
   })
   @ApiBody({
     type: NewUserDTO,
-    schema: {
-      example: {
-        name: 'John Doe',
-        email: 'johndoe@test.com',
-        password: 'password',
-      },
-    },
   })
   @Post('register')
   register(@Body() user: NewUserDTO): Promise<NewUser | null> {
@@ -59,12 +62,6 @@ export class AuthController {
   })
   @ApiBody({
     type: ExistingUserDTO,
-    schema: {
-      example: {
-        email: 'johndoe@test.com',
-        password: 'password',
-      },
-    },
   })
   @Post('login')
   login(@Body() user: ExistingUserDTO): Promise<{ token: string } | null> {
@@ -83,7 +80,8 @@ export class AuthController {
     description: 'Invalid JWT token',
   })
   @ApiBearerAuth(AuthorizationHeader.BEARER)
-  verifyJwt(@Body() payload: JwtDTO) {
-    return this.authService.verifyJwt(payload.jwt);
+  @UseGuards(JwtGuard)
+  verifyJwt(@GetToken() token: string) {
+    return this.authService.verifyJwt(token);
   }
 }

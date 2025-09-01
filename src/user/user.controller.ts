@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -20,6 +21,7 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { CreateUserOnboardingDTO } from 'src/onboarding/dto/create-user-onboarding.dto';
 import { AuthorizationHeader } from 'src/utils/enum';
 import { RequestUser } from 'src/utils/interface';
+import { GenerateCoverLetterDTO } from './dto/generate-cover-letter.dto';
 import { NewUser } from './interface/user.interface';
 import { UserService } from './user.service';
 
@@ -61,5 +63,26 @@ export class UserController {
     @Body() onboardUser: CreateUserOnboardingDTO,
   ) {
     return this.userService.onboardUser(req.user.id, onboardUser);
+  }
+
+  @Post('generate-cover-letter')
+  @ApiOperation({ summary: 'Generate a cover letter' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Cover letter successfully generated',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input',
+  })
+  @ApiBody({ type: GenerateCoverLetterDTO })
+  @ApiBearerAuth(AuthorizationHeader.BEARER)
+  @UseGuards(JwtGuard)
+  @UsePipes(ValidationPipe)
+  async generateCoverLetter(
+    @NestRequest() req: RequestUser,
+    @Body() generateCoverLetterDto: GenerateCoverLetterDTO,
+  ) {
+    return this.userService.generateCoverLetter(req.user.id, generateCoverLetterDto);
   }
 }
