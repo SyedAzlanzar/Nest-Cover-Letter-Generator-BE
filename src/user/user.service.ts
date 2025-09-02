@@ -90,7 +90,7 @@ export class UserService {
 
       const payload = {
         job_title: generateCoverLetterDto.jobTitle,
-        company_namee: generateCoverLetterDto.companyName,
+        company_name: generateCoverLetterDto.companyName,
         job_details: generateCoverLetterDto.jobDescription,
         email: user.email,
         city: onboarding.city,
