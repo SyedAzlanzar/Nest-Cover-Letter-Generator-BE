@@ -72,7 +72,7 @@ export class UserService {
   async generateCoverLetter(
     userId: string,
     generateCoverLetterDto: GenerateCoverLetterDTO,
-  ): Promise<string> {
+  ): Promise<{ success: boolean; cover_letter: string }> {
     try {
       const user = await this.userModel.findById(userId);
 
@@ -119,8 +119,10 @@ export class UserService {
         );
       }
 
-      const coverLetter = `Cover Letter for ${generateCoverLetterDto.jobTitle} at ${generateCoverLetterDto.companyName}`;
-      return coverLetter;
+      return {
+        success: true,
+        cover_letter: response.data.pdf_url,
+      };
     } catch (error) {
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
     }
