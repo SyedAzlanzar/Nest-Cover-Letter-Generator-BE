@@ -51,6 +51,7 @@ export class AuthController {
   register(@Body() user: NewUserDTO): Promise<NewUser | null> {
     return this.authService.register(user);
   }
+  
   @ApiOperation({ summary: 'Login user' })
   @ApiResponse({
     status: HttpStatus.OK,

@@ -6,6 +6,7 @@ import {
   Request as NestRequest,
   Param,
   Post,
+  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -24,6 +25,7 @@ import { RequestUser } from 'src/utils/interface';
 import { GenerateCoverLetterDTO } from './dto/generate-cover-letter.dto';
 import { NewUser } from './interface/user.interface';
 import { UserService } from './user.service';
+import { Request } from 'express';
 
 @ApiTags('User')
 @Controller('user')
@@ -80,9 +82,24 @@ export class UserController {
   @UseGuards(JwtGuard)
   @UsePipes(ValidationPipe)
   async generateCoverLetter(
+    @Req() expressReq: Request,
     @NestRequest() req: RequestUser,
     @Body() generateCoverLetterDto: GenerateCoverLetterDTO,
   ) {
-    return this.userService.generateCoverLetter(req.user.id, generateCoverLetterDto);
+    const controller = new AbortController();
+    expressReq.on('close', () => {
+      console.log('❌ Client disconnected, aborting request...');
+      controller.abort();
+    });
+
+    expressReq.on('aborted', () => {
+      console.log('❌ Client aborted, aborting request...');
+      controller.abort();
+    });
+    return this.userService.generateCoverLetter(
+      req.user.id,
+      generateCoverLetterDto,
+      { signal: controller.signal },
+    );
   }
 }
