@@ -69,10 +69,7 @@ export class AuthService {
     if (!user)
       throwHttpException('Credentials invalid!', HttpStatus.UNAUTHORIZED);
 
-    // check if user has a onboarding profile 
-
-
-    const jwt = await this.jwtService.signAsync({ user });
+    const jwt = await this.jwtService.signAsync({ id:user.id, email: user.email });
     return { token: jwt, user };
   }
 

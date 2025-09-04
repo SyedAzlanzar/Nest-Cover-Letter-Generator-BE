@@ -6,12 +6,14 @@ import {
   Request as NestRequest,
   Param,
   Post,
+  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -20,15 +22,17 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { CreateUserOnboardingDTO } from 'src/onboarding/dto/create-user-onboarding.dto';
 import { AuthorizationHeader } from 'src/utils/enum';
 import { RequestUser } from 'src/utils/interface';
+import { GenerateCoverLetterDTO } from './dto/generate-cover-letter.dto';
 import { NewUser } from './interface/user.interface';
 import { UserService } from './user.service';
+import { Request } from 'express';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get(':id')
+  @Get('me')
   @ApiOperation({ summary: "Get a user's data" })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -39,8 +43,9 @@ export class UserController {
     description: 'Unauthorized',
   })
   @ApiBearerAuth(AuthorizationHeader.BEARER)
-  getUser(@Param('id') id: string): Promise<NewUser | null> {
-    return this.userService.findById(id);
+  @UseGuards(JwtGuard)
+  getUser(@NestRequest() req: RequestUser): Promise<NewUser | null> {
+    return this.userService.findById(req.user.id);
   }
 
   @Post('onboarding')
@@ -61,5 +66,41 @@ export class UserController {
     @Body() onboardUser: CreateUserOnboardingDTO,
   ) {
     return this.userService.onboardUser(req.user.id, onboardUser);
+  }
+
+  @Post('generate-cover-letter')
+  @ApiOperation({ summary: 'Generate a cover letter' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Cover letter successfully generated',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input',
+  })
+  @ApiBody({ type: GenerateCoverLetterDTO })
+  @ApiBearerAuth(AuthorizationHeader.BEARER)
+  @UseGuards(JwtGuard)
+  @UsePipes(ValidationPipe)
+  async generateCoverLetter(
+    @Req() expressReq: Request,
+    @NestRequest() req: RequestUser,
+    @Body() generateCoverLetterDto: GenerateCoverLetterDTO,
+  ) {
+    const controller = new AbortController();
+    expressReq.on('close', () => {
+      console.log('❌ Client disconnected, aborting request...');
+      controller.abort();
+    });
+
+    expressReq.on('aborted', () => {
+      console.log('❌ Client aborted, aborting request...');
+      controller.abort();
+    });
+    return this.userService.generateCoverLetter(
+      req.user.id,
+      generateCoverLetterDto,
+      { signal: controller.signal },
+    );
   }
 }

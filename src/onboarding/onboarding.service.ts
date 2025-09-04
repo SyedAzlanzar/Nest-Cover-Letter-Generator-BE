@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model, ObjectId, Types } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 import { throwHttpException } from 'src/utils/exception-handling';
 import { CreateUserOnboardingDTO } from './dto/create-user-onboarding.dto';
@@ -11,15 +11,15 @@ export class OnboardingService {
   constructor(
     @InjectModel(Onboarding.name) private onboardingModel: Model<Onboarding>,
   ) {}
-/**
- *
- *
- * @param {User} user
- * @param {CreateUserOnboardingDTO} dto
- * @return {*}  {Promise<Onboarding>}
- * @memberof OnboardingService
- */
-async createOnboardingData(
+  /**
+   *
+   *
+   * @param {User} user
+   * @param {CreateUserOnboardingDTO} dto
+   * @return {*}  {Promise<Onboarding>}
+   * @memberof OnboardingService
+   */
+  async createOnboardingData(
     user: User,
     dto: CreateUserOnboardingDTO,
   ): Promise<Onboarding> {
@@ -28,10 +28,7 @@ async createOnboardingData(
         user: user._id,
       });
       if (existingOnboarding) {
-        throwHttpException(
-          'Onboarding data already exists for this user',
-          HttpStatus.CONFLICT,
-        );
+        throwHttpException('User is already onboarded', HttpStatus.CONFLICT);
       }
       const newOnboarding = new this.onboardingModel({
         ...dto,

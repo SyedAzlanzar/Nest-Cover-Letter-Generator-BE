@@ -10,8 +10,7 @@ export class User extends Document {
   @Prop({ required: true, minlength: 8 })
   password: string;
 
-  // Reference to Onboarding
-  @Prop({ type: Types.ObjectId, ref: 'Onboarding', unique: true })
+  @Prop({ type: Types.ObjectId, ref: 'Onboarding',})
   onboarding?: Types.ObjectId | Onboarding;
 }
 

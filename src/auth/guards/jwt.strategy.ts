@@ -7,10 +7,8 @@ import { NewUser } from 'src/user/interface/user.interface';
 import { UserService } from 'src/user/user.service';
 
 interface JWT {
-  user: {
     id: string;
     email: string;
-  };
 }
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -25,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate({ user }: JWT): Promise<NewUser> {
+  async validate(user : JWT): Promise<NewUser> {
     const foundUser = await this.usersService.findById(user.id);
     return foundUser;
   }
