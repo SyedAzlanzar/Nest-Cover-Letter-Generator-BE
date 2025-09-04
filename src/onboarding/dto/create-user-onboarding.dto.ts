@@ -18,6 +18,10 @@ export class CreateUserOnboardingDTO {
   @IsOptional()
   lastName?: string;
 
+   @ApiProperty({ example: '132253', required: true })
+  @IsString()
+  postalCode: string;
+
   @ApiProperty({ example: 'Pakistan' })
   @IsString()
   @IsNotEmpty()

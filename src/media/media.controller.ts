@@ -44,7 +44,7 @@ export class MediaController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('resume'))
   async uploadResume(@UploadedFile() file: Express.Multer.File) {
     return this.mediaService.uploadResume(file);
   }
