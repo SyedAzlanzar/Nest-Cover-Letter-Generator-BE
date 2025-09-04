@@ -12,6 +12,6 @@ import { OnboardingService } from './onboarding.service';
   ],
   controllers: [OnboardingController],
   providers: [OnboardingService],
-  exports: [OnboardingService],
+  exports: [OnboardingService,MongooseModule],
 })
 export class OnboardingModule {}

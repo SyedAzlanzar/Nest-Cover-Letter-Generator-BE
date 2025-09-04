@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { CreateUserOnboardingDTO } from 'src/onboarding/dto/create-user-onboarding.dto';
 import { OnboardingService } from 'src/onboarding/onboarding.service';
 import { Onboarding } from 'src/onboarding/schemas/onboarding.schema';
@@ -19,11 +19,14 @@ export class UserService {
     return {
       id: user._id,
       email: user.email,
+      onboarding: user?.onboarding || null,
     };
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).exec();
+    // check if user has onboarded
+    const user = await this.userModel.findOne({ email }).populate('onboarding')
+    return user;
   }
 
   async findById(id: string): Promise<NewUser | null> {
@@ -39,26 +42,27 @@ export class UserService {
     });
     return newUser.save();
   }
-/**
- *
- *
- * @param {string} userId
- * @param {CreateUserOnboardingDTO} onboardUser
- * @return {*}  {Promise<Onboarding>}
- * @memberof UserService
- */
-async onboardUser(
-    userId: string,
+  /**
+   *
+   *
+   * @param {string} userId
+   * @param {CreateUserOnboardingDTO} onboardUser
+   * @return {*}  {Promise<Onboarding>}
+   * @memberof UserService
+   */
+  async onboardUser(
+    userId: ObjectId,
     onboardUser: CreateUserOnboardingDTO,
   ): Promise<Onboarding> {
     try {
-      const user = await this.userModel.findById(userId).exec();
+      const user = await this.userModel.findById(userId)
       if (!user) throwHttpException('User not found', HttpStatus.NOT_FOUND);
 
       const onboardingData = await this.onboardingService.createOnboardingData(
         user,
         onboardUser,
       );
+      
       return onboardingData;
     } catch (error) {
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
