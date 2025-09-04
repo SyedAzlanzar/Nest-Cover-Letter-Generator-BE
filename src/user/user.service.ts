@@ -1,10 +1,13 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
+import axios from 'axios';
 import { Model } from 'mongoose';
 import { CreateUserOnboardingDTO } from 'src/onboarding/dto/create-user-onboarding.dto';
 import { OnboardingService } from 'src/onboarding/onboarding.service';
 import { Onboarding } from 'src/onboarding/schemas/onboarding.schema';
 import { throwHttpException } from 'src/utils/exception-handling';
+import { GenerateCoverLetterDTO } from './dto/generate-cover-letter.dto';
 import { NewUser } from './interface/user.interface';
 import { User } from './schemas/user.schema';
 
@@ -13,6 +16,7 @@ export class UserService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly onboardingService: OnboardingService,
+    private readonly configService: ConfigService,
   ) {}
 
   _getNewUser(user: User): NewUser {
@@ -39,15 +43,15 @@ export class UserService {
     });
     return newUser.save();
   }
-/**
- *
- *
- * @param {string} userId
- * @param {CreateUserOnboardingDTO} onboardUser
- * @return {*}  {Promise<Onboarding>}
- * @memberof UserService
- */
-async onboardUser(
+  /**
+   *
+   *
+   * @param {string} userId
+   * @param {CreateUserOnboardingDTO} onboardUser
+   * @return {*}  {Promise<Onboarding>}
+   * @memberof UserService
+   */
+  async onboardUser(
     userId: string,
     onboardUser: CreateUserOnboardingDTO,
   ): Promise<Onboarding> {
@@ -61,6 +65,72 @@ async onboardUser(
       );
       return onboardingData;
     } catch (error) {
+      throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async generateCoverLetter(
+    userId: string,
+    generateCoverLetterDto: GenerateCoverLetterDTO,
+    options?: { signal: AbortSignal },
+  ): Promise<{ success: boolean; coverLetterUrl: string }> {
+    try {
+      const user = await this.userModel.findById(userId);
+
+      if (!user) throwHttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const onboarding = await this.onboardingService.getOnboardingData(
+        user._id,
+      );
+
+      if (!onboarding)
+        throwHttpException(
+          'Please complete your onboarding profile',
+          HttpStatus.NOT_FOUND,
+        );
+
+      const payload = {
+        job_title: generateCoverLetterDto.jobTitle,
+        company_name: generateCoverLetterDto.companyName,
+        job_details: generateCoverLetterDto.jobDescription,
+        email: user.email,
+        city: onboarding.city,
+        country: onboarding.country,
+        phone_number: onboarding.phoneNumber,
+        postal_code: onboarding.postalCode,
+        resume_path: onboarding.resumeLink,
+        full_name: onboarding.fullName,
+      };
+
+      const pythonApiUrl = this.configService.get<string>('app.python_api_url');
+
+      if (!pythonApiUrl) {
+        throwHttpException(
+          'server URL is not configured',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+     
+      const response = await axios.post(`${pythonApiUrl}/generate`, payload, {
+        signal: options?.signal,
+      });
+
+      if (response.status !== 200) {
+        throwHttpException(
+          'Failed to generate cover letter',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return {
+        success: true,
+        coverLetterUrl: response.data.pdf_url,
+      };
+    } catch (error) {
+      if (error.message === 'aborted') {
+        console.log('❌ Request was aborted');
+        throwHttpException('Request was aborted', HttpStatus.REQUEST_TIMEOUT);
+      }
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
     }
   }

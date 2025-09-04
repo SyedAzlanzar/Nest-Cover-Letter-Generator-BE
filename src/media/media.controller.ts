@@ -37,7 +37,7 @@ export class MediaController {
     schema: {
       type: 'object',
       properties: {
-        resume: {
+        file: {
           type: 'string',
           format: 'binary',
         },

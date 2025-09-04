@@ -16,6 +16,6 @@ import { MediaModule } from './media/media.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*'); // ✅ Apply to all routes
+    consumer.apply(LoggerMiddleware).forRoutes('*'); 
   }
 }

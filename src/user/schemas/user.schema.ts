@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { Document, Types } from 'mongoose';
+import { Document, Types,Schema as MongoSchema } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -10,7 +10,7 @@ export class User extends Document {
   @Prop({ required: true, minlength: 8 })
   password: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Onboarding' })
+  @Prop({ type:MongoSchema.Types.ObjectId, ref: 'Onboarding' })
   onboarding?: Types.ObjectId;
 }
 
