@@ -32,7 +32,7 @@ import { Request } from 'express';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get(':id')
+  @Get('me')
   @ApiOperation({ summary: "Get a user's data" })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -43,8 +43,9 @@ export class UserController {
     description: 'Unauthorized',
   })
   @ApiBearerAuth(AuthorizationHeader.BEARER)
-  getUser(@Param('id') id: string): Promise<NewUser | null> {
-    return this.userService.findById(id);
+  @UseGuards(JwtGuard)
+  getUser(@NestRequest() req: RequestUser): Promise<NewUser | null> {
+    return this.userService.findById(req.user.id);
   }
 
   @Post('onboarding')

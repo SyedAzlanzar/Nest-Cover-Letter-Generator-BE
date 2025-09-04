@@ -14,16 +14,10 @@ import {
 @Module({
   imports: [
     OnboardingModule,
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      {
-        name: Onboarding.name,
-        schema: OnboardingSchema,
-      },
-    ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController],
-  providers: [UserService, OnboardingService],
-  exports: [UserService, OnboardingService],
+  providers: [UserService],
+  exports: [UserService, MongooseModule],
 })
 export class UserModule {}

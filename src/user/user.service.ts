@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { CreateUserOnboardingDTO } from 'src/onboarding/dto/create-user-onboarding.dto';
 import { OnboardingService } from 'src/onboarding/onboarding.service';
 import { Onboarding } from 'src/onboarding/schemas/onboarding.schema';
@@ -23,15 +23,18 @@ export class UserService {
     return {
       id: user._id,
       email: user.email,
+      onboarding: user?.onboarding || null,
     };
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).exec();
+    // check if user has onboarded
+    const user = await this.userModel.findOne({ email }).populate('onboarding')
+    return user;
   }
 
   async findById(id: string): Promise<NewUser | null> {
-    const user = await this.userModel.findById(id).exec();
+    const user = await this.userModel.findById(id).populate('onboarding').exec();
     if (!user) return null;
     return this._getNewUser(user);
   }
@@ -52,17 +55,18 @@ export class UserService {
    * @memberof UserService
    */
   async onboardUser(
-    userId: string,
+    userId: ObjectId,
     onboardUser: CreateUserOnboardingDTO,
   ): Promise<Onboarding> {
     try {
-      const user = await this.userModel.findById(userId).exec();
+      const user = await this.userModel.findById(userId)
       if (!user) throwHttpException('User not found', HttpStatus.NOT_FOUND);
 
       const onboardingData = await this.onboardingService.createOnboardingData(
         user,
         onboardUser,
       );
+      
       return onboardingData;
     } catch (error) {
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
@@ -79,7 +83,7 @@ export class UserService {
 
       if (!user) throwHttpException('User not found', HttpStatus.NOT_FOUND);
 
-      const onboarding = await this.onboardingService.getOnboardingData(
+      const onboarding = await this.onboardingService.findByUserId(
         user._id,
       );
 
@@ -111,7 +115,6 @@ export class UserService {
         );
       }
 
-     
       const response = await axios.post(`${pythonApiUrl}/generate`, payload, {
         signal: options?.signal,
       });
@@ -127,6 +130,7 @@ export class UserService {
         coverLetterUrl: response.data.pdf_url,
       };
     } catch (error) {
+      console.log("🚀 ~ UserService ~ generateCoverLetter ~ error:", error)
       if (error.message === 'aborted') {
         console.log('❌ Request was aborted');
         throwHttpException('Request was aborted', HttpStatus.REQUEST_TIMEOUT);

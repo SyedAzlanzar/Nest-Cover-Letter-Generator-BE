@@ -1,12 +1,13 @@
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ExistingUserDTO } from '../user/dto/existing-user.dto';
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
 import { NewUserDTO } from 'src/user/dto/new-user.dto';
 
-import { UserService } from './../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { NewUser } from 'src/user/interface/user.interface';
+import { throwHttpException } from 'src/utils/exception-handling';
+import { UserService } from './../user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +26,8 @@ export class AuthService {
     const existingUser = await this.userService.findByEmail(email);
 
     if (existingUser)
-      throw new HttpException(
-        'An account with that email already exists!',
+      throwHttpException(
+        'Email already in use',
         HttpStatus.CONFLICT,
       );
 
@@ -44,7 +45,7 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string): Promise<NewUser | null> {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.findByEmail(email)
     const doesUserExist = !!user;
 
     if (!doesUserExist) return null;
@@ -66,9 +67,9 @@ export class AuthService {
     const user = await this.validateUser(email, password);
 
     if (!user)
-      throw new HttpException('Invalid! credentials', HttpStatus.UNAUTHORIZED);
+      throwHttpException('Credentials invalid!', HttpStatus.UNAUTHORIZED);
 
-    const jwt = await this.jwtService.signAsync({ user });
+    const jwt = await this.jwtService.signAsync({ id:user.id, email: user.email });
     return { token: jwt, user };
   }
 
@@ -78,7 +79,7 @@ export class AuthService {
       return { exp };
     } catch (error) {
       console.error('JWT verification failed:', error.message);
-      throw new HttpException('Invalid JWT', HttpStatus.UNAUTHORIZED);
+      throwHttpException('Invalid JWT', HttpStatus.UNAUTHORIZED);
     }
   }
 }

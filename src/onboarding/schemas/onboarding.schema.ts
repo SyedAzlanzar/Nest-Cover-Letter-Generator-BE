@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types,Schema as MongoSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Onboarding extends Document {
@@ -30,9 +30,9 @@ export class Onboarding extends Document {
   @Prop({ default: true })
   isActive: boolean;
 
-  @Prop({ type: MongoSchema.Types.ObjectId, ref: 'User' })
+  // Reference to User — required and unique for 1:1
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
   user: Types.ObjectId;
-  
 }
 
 export const OnboardingSchema = SchemaFactory.createForClass(Onboarding);
