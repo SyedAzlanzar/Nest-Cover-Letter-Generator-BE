@@ -10,6 +10,7 @@ import { throwHttpException } from 'src/utils/exception-handling';
 import { GenerateCoverLetterDTO } from './dto/generate-cover-letter.dto';
 import { NewUser } from './interface/user.interface';
 import { User } from './schemas/user.schema';
+import { MediaService } from 'src/media/media.service';
 
 @Injectable()
 export class UserService {
@@ -17,6 +18,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly onboardingService: OnboardingService,
     private readonly configService: ConfigService,
+    private readonly mediaService:MediaService
   ) {}
 
   _getNewUser(user: User): NewUser {
@@ -125,9 +127,22 @@ export class UserService {
           HttpStatus.BAD_REQUEST,
         );
       }
+
+
+      const coverLetterPDF= await this.mediaService.generateCoverLetterPDF({
+        fullname:onboarding.fullName,
+        city:onboarding.city,
+        country:onboarding.country,
+        postalcode:onboarding.postalCode,
+        email:user.email,
+        phone:onboarding.phoneNumber,
+        companyName:generateCoverLetterDto.companyName,
+        paragraphs:response?.data?.letter?.split("\n\n")
+      },pythonApiUrl)
+
       return {
         success: true,
-        coverLetterUrl: response.data.pdf_url,
+        coverLetterUrl: coverLetterPDF.url,
       };
     } catch (error) {
       console.log("🚀 ~ UserService ~ generateCoverLetter ~ error:", error)

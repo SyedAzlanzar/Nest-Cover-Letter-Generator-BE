@@ -10,10 +10,12 @@ import {
   Onboarding,
   OnboardingSchema,
 } from 'src/onboarding/schemas/onboarding.schema';
+import { MediaModule } from 'src/media/media.module';
 
 @Module({
   imports: [
     OnboardingModule,
+    MediaModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController],

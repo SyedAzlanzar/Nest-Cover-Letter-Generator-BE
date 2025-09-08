@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as FormData from 'form-data';
 import { throwHttpException } from 'src/utils/exception-handling';
+import { ICoverLetterPDF } from './interface/cover-letter-pdf';
 
 @Injectable()
 export class MediaService {
@@ -50,6 +51,81 @@ export class MediaService {
       const detail =
         error?.response?.data || error?.message || 'Failed to upload resume';
       throwHttpException(detail, error.status || HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async generateCoverLetterPDF(data: ICoverLetterPDF,pythonApiUrl:string) {
+    const puppeteer = require('puppeteer');
+    const ejs = require('ejs');
+    const fs = require('fs');
+    const FormData = require('form-data');
+
+    try {
+      // Load EJS template
+      const ejsTemplate = fs.readFileSync(
+        'src/template/cover_letter.ejs',
+        'utf8',
+      );
+
+      // Render HTML with injected data
+      const htmlContent = ejs.render(ejsTemplate, {
+        fullname: data.fullname,
+        city: data.city,
+        country: data.country,
+        postalcode: data.postalcode,
+        email: data.email,
+        phone: data.phone,
+        companyName: data.companyName,
+        paragraphs: data.paragraphs,
+      });
+
+      // Generate PDF with Puppeteer
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      await page.setContent(htmlContent);
+
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+      });
+
+      await browser.close();
+
+      if (!pdfBuffer) {
+        throwHttpException('File is required', HttpStatus.BAD_REQUEST);
+      }
+
+      const buffer = Buffer.isBuffer(pdfBuffer)
+        ? pdfBuffer
+        : Buffer.from(pdfBuffer);
+
+      const formData = new FormData();
+      formData.append('pdf', buffer, {
+        filename: `cover-letter${data.companyName?`-${data.companyName}`:''}`,
+        contentType: 'application/pdf',
+      });
+
+      const response = await axios.post(
+        `${pythonApiUrl}/upload-file`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        },
+      );
+
+      if (!response.data?.url) {
+        throwHttpException(
+          'Invalid response from Python API',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+      return { url: response?.data?.url };
+    } catch (error) {
+      console.log('🚀 ~ MediaService ~ generateCoverLetterPDF ~ error:', error);
+      throwHttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 }
