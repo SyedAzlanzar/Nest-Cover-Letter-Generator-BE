@@ -1,17 +1,24 @@
 import { Logger } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from './app.module';
+import { join } from 'path';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
+import { AppModule } from './app.module';
 import { AuthorizationHeader } from './utils/enum';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
 
+  app.setViewEngine('ejs');
+
   const configService = app.get(ConfigService);
+
+    console.log('Static path:', join(__dirname, '..', 'public',"\location.png"));
+
 
   app.enableCors({
     origin: '*',
