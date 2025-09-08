@@ -17,9 +17,6 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-    console.log('Static path:', join(__dirname, '..', 'public',"\location.png"));
-
-
   app.enableCors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
