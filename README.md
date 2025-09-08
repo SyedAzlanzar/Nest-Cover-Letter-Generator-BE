@@ -1,85 +1,95 @@
-# 🚀 NestJS Backend - User Onboarding API
+# 📡 Resume Parser Backend (NestJS + MongoDB + JWT)
 
-This is a **NestJS backend project** with **JWT authentication** and a **User Onboarding module** built using **MongoDB + Mongoose**.  
-It also includes **Swagger API documentation** for easy API testing.
-
----
-
-## 📌 Features
-- 🔐 User authentication with JWT
-- 👤 User onboarding (first name, last name, country, city, phone, resume link, etc.)
-- 🗂 MongoDB with Mongoose schemas
-- 📖 Swagger API documentation
-- ✅ Validation using `class-validator`
+This is the main backend API built with **NestJS**. It handles authentication, user onboarding data, resume/media upload, and requests to the Python AI microservice for resume parsing and cover letter PDF generation.
 
 ---
 
-## ⚙️ Installation
+## Features
+
+- User registration & login (JWT)
+- Onboarding (store job preferences)
+- Media upload endpoints (resume PDFs)
+- Cover letter generation endpoint (proxies request to Python AI service)
+- EJS templates available for server-side cover letter rendering
+
+---
+
+## Project structure
+
+```text
+Resume-Parser-Backend
+├─ src
+│  ├─ auth
+│  │  ├─ auth.controller.ts
+│  │  ├─ auth.module.ts
+│  │  └─ auth.service.ts
+│  ├─ config
+│  ├─ database
+│  ├─ media
+│  ├─ onboarding
+│  ├─ user
+│  ├─ template
+│  └─ utils
+├─ package.json
+├─ tsconfig.json
+└─ vercel.json
+```
+
+---
+
+## Environment variables (.env)
+
+Create a `.env` in the project root and add values like:
+
+```text
+MONGO_URI=mongodb://localhost:27017
+JWT_SECRET=your_jwt_secret_here
+PORT=3000
+PYTHON_SERVICE_URL=http://localhost:8000
+```
+
+---
+
+## Install & run (development)
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
-
-# Install dependencies
+# install
 npm install
-```
 
----
-
-## 🔑 Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/your-db
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=3600s
-```
-
----
-
-## ▶️ Running the App
-
-```bash
-# Development
+# start in development mode
 npm run start:dev
-
-# Production build
-npm run build
-npm run start:prod
 ```
 
-Server will run at:  
-👉 **http://localhost:5000**
+Default server URL: `http://localhost:3000` (change PORT in `.env` if needed)
 
 ---
 
-## 📖 Swagger Documentation
+## Example API endpoints
 
-Swagger docs are available at:  
+- `POST /auth/register` — register a new user
+- `POST /auth/login` — login (returns JWT)
 
-👉 **http://localhost:5000/api/docs**
-
-### Authorize in Swagger
-1. Click on the **Authorize** button (top right).
-2. Enter: `Bearer <your_token>`.
-3. Test protected APIs directly.
-
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-npm run test
-
-# Run e2e tests
-npm run test:e2e
-```
+Notes: Add authentication guard to protected endpoints (JWT guard implemented in `auth/guards`)
 
 ---
 
-## 📜 License
+## Integration with Python AI service
 
-MIT © 2025
+The backend sends relevant requests to the Python service (parse / generate) via `PYTHON_SERVICE_URL` (set in `.env`). The Python service is responsible for heavy NLP, parsing, and PDF generation — the NestJS backend coordinates authentication, storage references, and user workflows.
+
+---
+
+## Deployment notes
+
+- Use a managed MongoDB (Atlas) for production.
+- Secure `JWT_SECRET` and any API keys via your deployment provider's secret store.
+- Consider containerizing (Docker) both NestJS and Python services for orchestration.
+
+---
+
+## Tech stack
+
+- NestJS (TypeScript)
+- MongoDB (Mongoose)
+- JWT for auth
+- EJS templates for server-side rendering (cover-letter)
