@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { CreateUserOnboardingDTO } from 'src/onboarding/dto/create-user-onboarding.dto';
 import { OnboardingService } from 'src/onboarding/onboarding.service';
 import { Onboarding } from 'src/onboarding/schemas/onboarding.schema';
@@ -18,12 +18,12 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly onboardingService: OnboardingService,
     private readonly configService: ConfigService,
-    private readonly mediaService:MediaService
-  ) {}
+    private readonly mediaService: MediaService
+  ) { }
 
   _getNewUser(user: User): NewUser {
     return {
-      id: user._id,
+      id: user._id.toString(),
       email: user.email,
       onboarding: user?.onboarding || null,
     };
@@ -68,7 +68,7 @@ export class UserService {
         user,
         onboardUser,
       );
-      
+
       return onboardingData;
     } catch (error) {
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
@@ -86,7 +86,7 @@ export class UserService {
       if (!user) throwHttpException('User not found', HttpStatus.NOT_FOUND);
 
       const onboarding = await this.onboardingService.findByUserId(
-        user._id,
+        user._id as string,
       );
 
       if (!onboarding)
@@ -129,23 +129,24 @@ export class UserService {
       }
 
 
-      const coverLetterPDF= await this.mediaService.generateCoverLetterPDF({
-        fullname:onboarding.fullName,
-        city:onboarding.city,
-        country:onboarding.country,
-        postalcode:onboarding.postalCode,
-        email:user.email,
-        phone:onboarding.phoneNumber,
-        companyName:generateCoverLetterDto.companyName,
-        paragraphs:response?.data?.letter?.split("\n\n")
-      },pythonApiUrl)
+      const coverLetterPDF = await this.mediaService.generateCoverLetterPDF({
+        coverLetterLayout: generateCoverLetterDto.coverLetterLayout,
+        fullname: onboarding.fullName,
+        city: onboarding.city,
+        country: onboarding.country,
+        postalcode: onboarding.postalCode,
+        email: user.email,
+        phone: onboarding.phoneNumber,
+        companyName: generateCoverLetterDto.companyName,
+        jobTitle: generateCoverLetterDto.jobTitle,
+        paragraphs: response?.data?.letter?.split("\n\n")
+      }, pythonApiUrl)
 
       return {
         success: true,
         coverLetterUrl: coverLetterPDF.url,
       };
     } catch (error) {
-      console.log("🚀 ~ UserService ~ generateCoverLetter ~ error:", error)
       if (error.message === 'aborted') {
         console.log('❌ Request was aborted');
         throwHttpException('Request was aborted', HttpStatus.REQUEST_TIMEOUT);

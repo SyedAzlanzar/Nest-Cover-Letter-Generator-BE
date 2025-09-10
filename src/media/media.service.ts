@@ -7,7 +7,7 @@ import { ICoverLetterPDF } from './interface/cover-letter-pdf';
 
 @Injectable()
 export class MediaService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   async uploadResume(
     file: Express.Multer.File,
@@ -54,7 +54,7 @@ export class MediaService {
     }
   }
 
-  async generateCoverLetterPDF(data: ICoverLetterPDF,pythonApiUrl:string) {
+  async generateCoverLetterPDF(data: ICoverLetterPDF, pythonApiUrl: string) {
     const puppeteer = require('puppeteer');
     const ejs = require('ejs');
     const fs = require('fs');
@@ -63,7 +63,7 @@ export class MediaService {
     try {
       // Load EJS template
       const ejsTemplate = fs.readFileSync(
-        'src/template/cover_letter.ejs',
+        `src/template/${data.coverLetterLayout}.ejs`,
         'utf8',
       );
 
@@ -76,6 +76,7 @@ export class MediaService {
         email: data.email,
         phone: data.phone,
         companyName: data.companyName,
+        jobTitle: data.jobTitle,
         paragraphs: data.paragraphs,
       });
 
@@ -88,6 +89,7 @@ export class MediaService {
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: true,
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
       });
 
       await browser.close();
@@ -102,7 +104,7 @@ export class MediaService {
 
       const formData = new FormData();
       formData.append('pdf', buffer, {
-        filename: `cover-letter${data.companyName?`-${data.companyName}`:''}`,
+        filename: `cover-letter${data.companyName ? `-${data.companyName.replaceAll(" ","-")}` : ''}`,
         contentType: 'application/pdf',
       });
 
@@ -124,7 +126,6 @@ export class MediaService {
       }
       return { url: response?.data?.url };
     } catch (error) {
-      console.log('🚀 ~ MediaService ~ generateCoverLetterPDF ~ error:', error);
       throwHttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cover Letter</title>
+  <style>
+      /* Remove all outer margin so visual borders remain at the edges */
+      @page {
+        margin: 0;
+      }
+
+      body {
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        font-size: 12pt;
+        line-height: 1.5;
+        color: #0a0a0a;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        position: relative;
+        width: 800px;
+        margin: 0 auto;
+      }
+
+      .content {
+        padding: 50px 60px;
+        box-sizing: border-box;
+      }
+
+      .header {
+        margin-bottom: 20px;
+      }
+
+      .header p {
+        margin: 2px 0;
+      }
+
+      .header p:first-child {
+        font-weight: 700;
+        font-size: 18pt;
+      }
+
+      .location,
+      .email,
+      .phone,
+      .loc-phn {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 18pt;
+        font-weight: normal;
+      }
+
+      .company {
+        margin-top: 30px;
+        margin-bottom: 20px;
+      }
+
+      .body p {
+        margin-bottom: 16px;
+      }
+
+      .closing {
+        margin-top: 30px;
+      }
+
+      .closing p {
+        margin: 0;
+      }
+
+      .corner1 {
+        height: 35px;
+        background-color: #f6f6f68a;
+      }
+
+      .subject {
+        margin-bottom: 20px;
+      }
+
+      .corner2 {
+        height: 35px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #f6f6f68a;
+        width: 800px;
+        margin: 0 auto;
+      }
+
+      .breaker {
+        height: 3px;
+        border: none;
+        background-color: #f6f6f68a;
+      }
+
+      .rightTop {
+        position: absolute;
+        right: 0;
+        height: 160px;
+        top: 35px;
+        min-width: 35px;
+        background-color: #f6f6f68a;
+      }
+
+      .leftTop {
+        position: absolute;
+        left: 0;
+        height: 160px;
+        top: 35px;
+        min-width: 35px;
+        background-color: #f6f6f68a;
+      }
+
+      /* Optional: to add spacing at the top after a manual page break */
+      .page-break {
+        page-break-before: always;
+      }
+
+      .page-break::before {
+        content: "";
+        display: block;
+        height: 50px;
+      }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <div class="corner1"></div>
+      <div class="rightTop"></div>
+      <div class="leftTop"></div>
+      <div class="content">
+     <!-- User Info -->
+    <div class="header">
+      <p><%= fullname %></p>
+        <p><%= postalcode %>, <%= city %> (<%= country %>)</p>
+        <p><%= email %>&nbsp;&nbsp;|&nbsp;&nbsp;<%= phone %></p>
+      </div>
+    <hr class="breaker">
+
+    <!-- Company -->
+    <div class="company">
+      <p>Dear <%= companyName %>,</p>
+    </div>
+
+    <!-- Body Paragraphs -->
+    <div class="body">
+      <% if (paragraphs && paragraphs.length) { %>
+        <% paragraphs.forEach(function(p) { %>
+          <p><%= p %></p>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <!-- Closing -->
+    <div class="closing">
+      <p>Yours sincerely,<br><%= fullname %></p>
+    </div>
+   </div>
+    <div class="corner2"></div>
+
+  </div>
+</body>
+</html>
