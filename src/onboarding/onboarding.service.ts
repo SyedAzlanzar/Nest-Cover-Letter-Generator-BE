@@ -37,7 +37,7 @@ export class OnboardingService {
       });
       await newOnboarding.save();
 
-      user.onboarding = newOnboarding._id;
+      user.onboarding = newOnboarding._id as Types.ObjectId;
       await user.save();
       return newOnboarding;
     } catch (error) {

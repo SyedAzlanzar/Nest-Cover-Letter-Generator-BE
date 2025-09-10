@@ -1,0 +1,4 @@
+export enum COVER_LETTER_LAYOUT{
+    CL_SHOW_1='CL-SHOW-1',
+    CL_SHOW_2='CL-SHOW-2',
+}
