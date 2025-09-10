@@ -11,6 +11,7 @@ export class MediaService {
 
   async uploadResume(
     file: Express.Multer.File,
+    token: string
   ): Promise<{ resumeLink: string }> {
     try {
       const pythonApiUrl = this.configService.get<string>('app.python_api_url');
@@ -35,6 +36,7 @@ export class MediaService {
         {
           headers: {
             ...formData.getHeaders(),
+            "Authorization": `Bearer ${token}`
           },
         },
       );
@@ -54,7 +56,7 @@ export class MediaService {
     }
   }
 
-  async generateCoverLetterPDF(data: ICoverLetterPDF, pythonApiUrl: string) {
+  async generateCoverLetterPDF(data: ICoverLetterPDF, pythonApiUrl: string, token: string) {
     const puppeteer = require('puppeteer');
     const ejs = require('ejs');
     const fs = require('fs');
@@ -104,7 +106,7 @@ export class MediaService {
 
       const formData = new FormData();
       formData.append('pdf', buffer, {
-        filename: `cover-letter${data.companyName ? `-${data.companyName.replaceAll(" ","-")}` : ''}`,
+        filename: `cover-letter${data.companyName ? `-${data.companyName.replaceAll(" ", "-")}` : ''}`,
         contentType: 'application/pdf',
       });
 
@@ -114,6 +116,7 @@ export class MediaService {
         {
           headers: {
             ...formData.getHeaders(),
+            "Authorization": `Bearer ${token}`
           },
         },
       );
