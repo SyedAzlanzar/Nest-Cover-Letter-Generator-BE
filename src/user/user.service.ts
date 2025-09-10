@@ -78,6 +78,7 @@ export class UserService {
   async generateCoverLetter(
     userId: string,
     generateCoverLetterDto: GenerateCoverLetterDTO,
+    token: string,
     options?: { signal: AbortSignal },
   ): Promise<{ success: boolean; coverLetterUrl: string }> {
     try {
@@ -116,9 +117,12 @@ export class UserService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
       const response = await axios.post(`${pythonApiUrl}/generate`, payload, {
         signal: options?.signal,
+        headers: {
+          "Authorization": `Bearer ${token}`
+
+        }
       });
 
       if (response.status !== 200) {
@@ -140,7 +144,7 @@ export class UserService {
         companyName: generateCoverLetterDto.companyName,
         jobTitle: generateCoverLetterDto.jobTitle,
         paragraphs: response?.data?.letter?.split("\n\n")
-      }, pythonApiUrl)
+      }, pythonApiUrl, token)
 
       return {
         success: true,
@@ -148,7 +152,6 @@ export class UserService {
       };
     } catch (error) {
       if (error.message === 'aborted') {
-        console.log('❌ Request was aborted');
         throwHttpException('Request was aborted', HttpStatus.REQUEST_TIMEOUT);
       }
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);

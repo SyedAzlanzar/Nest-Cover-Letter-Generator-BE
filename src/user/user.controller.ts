@@ -26,6 +26,7 @@ import { GenerateCoverLetterDTO } from './dto/generate-cover-letter.dto';
 import { NewUser } from './interface/user.interface';
 import { UserService } from './user.service';
 import { Request } from 'express';
+import { GetToken } from 'src/decorators/get-token.decorator';
 
 @ApiTags('User')
 @Controller('user')
@@ -86,20 +87,20 @@ export class UserController {
     @Req() expressReq: Request,
     @NestRequest() req: RequestUser,
     @Body() generateCoverLetterDto: GenerateCoverLetterDTO,
+    @GetToken() token:string
   ) {
     const controller = new AbortController();
     expressReq.on('close', () => {
-      console.log('❌ Client disconnected, aborting request...');
       controller.abort();
     });
 
     expressReq.on('aborted', () => {
-      console.log('❌ Client aborted, aborting request...');
       controller.abort();
     });
     return this.userService.generateCoverLetter(
       req.user.id,
       generateCoverLetterDto,
+      token,
       { signal: controller.signal },
     );
   }

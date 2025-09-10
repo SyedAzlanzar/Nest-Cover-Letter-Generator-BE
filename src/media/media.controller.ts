@@ -20,6 +20,7 @@ import {
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { AuthorizationHeader } from 'src/utils/enum';
 import { MediaService } from './media.service';
+import { GetToken } from 'src/decorators/get-token.decorator';
 
 @ApiTags('Media')
 @Controller('media')
@@ -37,7 +38,7 @@ export class MediaController {
     schema: {
       type: 'object',
       properties: {
-        file: {
+        resume: {
           type: 'string',
           format: 'binary',
         },
@@ -45,7 +46,7 @@ export class MediaController {
     },
   })
   @UseInterceptors(FileInterceptor('resume'))
-  async uploadResume(@UploadedFile() file: Express.Multer.File) {
-    return this.mediaService.uploadResume(file);
+  async uploadResume(@UploadedFile() file: Express.Multer.File,@GetToken() token:string) {
+    return this.mediaService.uploadResume(file,token);
   }
 }
