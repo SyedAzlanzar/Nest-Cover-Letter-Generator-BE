@@ -157,4 +157,34 @@ export class UserService {
       throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
     }
   }
+
+
+  async updateOnboarding(
+    userId: string,
+    onboardUser: CreateUserOnboardingDTO,
+  ): Promise<Onboarding> {
+    try {
+      const user = await this.userModel.findById(userId)
+      if (!user) throwHttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const onboarding = await this.onboardingService.findByUserId(
+        user._id as string,
+      );
+
+      if (!onboarding)
+        throwHttpException(
+          'Onboarding data not found',
+          HttpStatus.NOT_FOUND,
+        );
+
+      const updatedOnboarding = await this.onboardingService.updateOnboardingData(
+        onboarding._id as ObjectId,
+        onboardUser,
+      );
+
+      return updatedOnboarding;
+    } catch (error) {
+      throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
+    }
+  }
 }
