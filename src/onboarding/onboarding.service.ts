@@ -10,7 +10,7 @@ import { Onboarding } from './schemas/onboarding.schema';
 export class OnboardingService {
   constructor(
     @InjectModel(Onboarding.name) private onboardingModel: Model<Onboarding>,
-  ) {}
+  ) { }
   /**
    *
    *
@@ -47,5 +47,21 @@ export class OnboardingService {
 
   async findByUserId(userId: string): Promise<Onboarding | null> {
     return this.onboardingModel.findOne({ user: userId }).exec();
+  }
+
+  async updateOnboardingData(
+    userId: ObjectId,
+    dto: CreateUserOnboardingDTO,
+  ): Promise<Onboarding> {
+    try {
+      const onboarding = await this.onboardingModel.findOne({ user: userId });
+      if (!onboarding) {
+        throwHttpException('Onboarding data not found', HttpStatus.NOT_FOUND);
+      }
+      Object.assign(onboarding, dto);
+      return onboarding.save();
+    } catch (error) {
+      throwHttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
+    }
   }
 }

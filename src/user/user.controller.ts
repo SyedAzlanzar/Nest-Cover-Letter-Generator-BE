@@ -5,7 +5,9 @@ import {
   HttpStatus,
   Request as NestRequest,
   Param,
+  Patch,
   Post,
+  Put,
   Req,
   UseGuards,
   UsePipes,
@@ -31,7 +33,7 @@ import { GetToken } from 'src/decorators/get-token.decorator';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
 
   @Get('me')
   @ApiOperation({ summary: "Get a user's data" })
@@ -69,6 +71,30 @@ export class UserController {
     return this.userService.onboardUser(req.user.id, onboardUser);
   }
 
+  @Put('onboarding/update')
+  @ApiOperation({ summary: 'Update onboarding data for a user' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Onboarding data successfully updated',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input',
+  })
+  @ApiBearerAuth(AuthorizationHeader.BEARER)
+  @UseGuards(JwtGuard)
+  @UsePipes(ValidationPipe)
+  async updateOnboarding(
+    @NestRequest() req: RequestUser,
+    @Body() onboardUser: CreateUserOnboardingDTO,
+  ) {
+    return this.userService.updateOnboarding(req.user.id, onboardUser);
+  }
+
   @Post('generate-cover-letter')
   @ApiOperation({ summary: 'Generate a cover letter' })
   @ApiResponse({
@@ -87,7 +113,7 @@ export class UserController {
     @Req() expressReq: Request,
     @NestRequest() req: RequestUser,
     @Body() generateCoverLetterDto: GenerateCoverLetterDTO,
-    @GetToken() token:string
+    @GetToken() token: string
   ) {
     const controller = new AbortController();
     expressReq.on('close', () => {
