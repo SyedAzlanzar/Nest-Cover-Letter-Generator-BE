@@ -5,8 +5,8 @@ This is the main backend API built with **NestJS**. It handles authentication, u
 ---
 
 ## 🔗 System Components
-* 🖥️ [Frontend Repository](https://github.com/SyedAzlanzar/CoverCraft) - Next.js User Dashboard
-* 🤖 [AI Microservice Repository](https://github.com/SyedAzlanzar/python-ai-server) - FastAPI & ChromaDB Engine
+* 🖥️ [CoverCraft Frontend Extension Repository](https://github.com/SyedAzlanzar/CoverCraft) 
+* 🤖 [CoverCraft Python Service Respository](https://github.com/SyedAzlanzar/python-ai-server) 
 
 ---
 
